@@ -1,4 +1,5 @@
 #include "cpu.h"
+#include <stdio.h>
 
 #define DATA_LEN 6
 
@@ -47,14 +48,48 @@ void cpu_run(struct cpu *cpu)
 {
   int running = 1; // True until we get a HLT instruction
 
+  unsigned char ir;
+  int num_operands = 0;
+  unsigned char operandA;
+  unsigned char operandB;
+
   while (running) {
     // TODO
     // 1. Get the value of the current instruction (in address PC).
+    ir = cpu_ram_read(cpu);
     // 2. Figure out how many operands this next instruction requires
     // 3. Get the appropriate value(s) of the operands following this instruction
+    if (ir > 0b00111111) {
+      operandA = cpu->ram[cpu->pc+1];
+      num_operands++;
+    }
+    if (ir > 0b01111111) {
+      operandB = cpu->ram[cpu->pc+2];
+      num_operands++;
+    }
     // 4. switch() over it to decide on a course of action.
     // 5. Do whatever the instruction should do according to the spec.
     // 6. Move the PC to the next instruction.
+    switch(ir) {
+      // TODO PUT OUR INSTRUCTIONS HERE
+      case LDI:
+        cpu->registers[operandA] = operandB;
+        cpu->pc += 3;
+        break;
+      
+      case PRN:
+        printf("%s\n", operandA);
+        cpu->pc += 2;
+        break;
+
+      case HLT:
+       running = 0;
+       cpu->pc++;
+       break;
+      
+      default:
+        printf("Unknown instruction %02x at address %02x\n", ir, cpu->pc);
+    }
   }
 }
 
