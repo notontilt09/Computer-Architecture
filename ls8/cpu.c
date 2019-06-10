@@ -1,5 +1,7 @@
 #include "cpu.h"
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
 #define DATA_LEN 6
 
@@ -56,7 +58,7 @@ void cpu_run(struct cpu *cpu)
   while (running) {
     // TODO
     // 1. Get the value of the current instruction (in address PC).
-    ir = cpu_ram_read(cpu);
+    ir = cpu->ram[cpu->pc];
     // 2. Figure out how many operands this next instruction requires
     // 3. Get the appropriate value(s) of the operands following this instruction
     if (ir > 0b00111111) {
@@ -73,12 +75,12 @@ void cpu_run(struct cpu *cpu)
     switch(ir) {
       // TODO PUT OUR INSTRUCTIONS HERE
       case LDI:
-        cpu->registers[operandA] = operandB;
+        cpu->registers[operandB] = operandA;
         cpu->pc += 3;
         break;
       
       case PRN:
-        printf("%s\n", operandA);
+        printf("%d\n", operandB);
         cpu->pc += 2;
         break;
 
