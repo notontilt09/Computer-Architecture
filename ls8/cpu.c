@@ -86,12 +86,12 @@ void cpu_run(struct cpu *cpu)
     switch(ir) {
       // TODO PUT OUR INSTRUCTIONS HERE
       case LDI:
-        cpu->registers[operandB] = operandA;
+        cpu->registers[operandA] = operandB;
         cpu->pc += 3;
         break;
       
       case PRN:
-        printf("%d\n", operandB);
+        printf("%d\n", cpu->registers[operandA]);
         cpu->pc += 2;
         break;
 
