@@ -43,6 +43,17 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
   }
 }
 
+unsigned char cpu_ram_read(struct cpu *cpu)
+{
+  return cpu->ram[cpu->pc];
+}
+
+void cpu_ram_write(struct cpu *cpu, char input)
+{
+  cpu->ram[cpu->pc] = input;
+
+}
+
 /**
  * Run the CPU
  */
@@ -58,7 +69,7 @@ void cpu_run(struct cpu *cpu)
   while (running) {
     // TODO
     // 1. Get the value of the current instruction (in address PC).
-    ir = cpu->ram[cpu->pc];
+    ir = cpu_ram_read(cpu);
     // 2. Figure out how many operands this next instruction requires
     // 3. Get the appropriate value(s) of the operands following this instruction
     if (ir > 0b00111111) {
@@ -107,13 +118,4 @@ void cpu_init(struct cpu *cpu)
   memset(cpu->ram, 0, 256);
 }
 
-unsigned char cpu_ram_read(struct cpu *cpu)
-{
-  return cpu->ram[cpu->pc];
-}
 
-void cpu_ram_write(struct cpu *cpu, char input)
-{
-  cpu->ram[cpu->pc] = input;
-
-}
