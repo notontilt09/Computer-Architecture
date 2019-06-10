@@ -102,6 +102,7 @@ void cpu_run(struct cpu *cpu)
       
       default:
         printf("Unknown instruction %02x at address %02x\n", ir, cpu->pc);
+        exit(1);
     }
   }
 }
