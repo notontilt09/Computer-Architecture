@@ -114,6 +114,10 @@ void cpu_run(struct cpu *cpu)
       case PRN:
         printf("%d\n", cpu->registers[operandA]);
         break;
+      
+      case MUL:
+        printf("%d\n", (cpu->registers[operandA] * cpu->registers[operandB]));
+        break;
 
       case HLT:
         running = 0;
