@@ -5,26 +5,22 @@
 
 #define DATA_LEN 6
 
+// helper functions for reading/writing ram
+unsigned char cpu_ram_read(struct cpu *cpu)
+{
+  return cpu->ram[cpu->pc];
+}
+
+void cpu_ram_write(struct cpu *cpu, int address, char input)
+{
+  cpu->ram[address] = input;
+
+}
 /**
  * Load the binary bytes from a .ls8 source file into a RAM array
  */
 void cpu_load(struct cpu *cpu, char *filename)
 {
-  // char data[DATA_LEN] = {
-  //   // From print8.ls8
-  //   0b10000010, // LDI R0,8
-  //   0b00000000,
-  //   0b00001000,
-  //   0b01000111, // PRN R0
-  //   0b00000000,
-  //   0b00000001  // HLT
-  // };
-
-  // int address = 0;
-
-  // for (int i = 0; i < DATA_LEN; i++) {
-  //   cpu->ram[address++] = data[i];
-  // }
   FILE *fp;
   char line[1024];
   int address = 0;
@@ -44,7 +40,7 @@ void cpu_load(struct cpu *cpu, char *filename)
       continue;
     }
 
-    cpu->ram[address] = v;
+    cpu_ram_write(cpu, address, v);
     address++;
   }
 
@@ -76,17 +72,6 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
 
     // TODO: implement more ALU ops
   }
-}
-
-unsigned char cpu_ram_read(struct cpu *cpu)
-{
-  return cpu->ram[cpu->pc];
-}
-
-void cpu_ram_write(struct cpu *cpu, char input)
-{
-  cpu->ram[cpu->pc] = input;
-
 }
 
 /**
@@ -122,35 +107,27 @@ void cpu_run(struct cpu *cpu)
       case LDI:
         cpu->registers[operandA] = operandB;
         break;
-      
       case PRN:
         printf("%d\n", cpu->registers[operandA]);
         break;
-      
       case MUL:
         alu(cpu, ALU_MUL, operandA, operandB);
         break;
-
       case ADD:
         alu(cpu, ALU_ADD, operandA, operandB);
         break;
-
       case SUB:
         alu(cpu, ALU_SUB, operandA, operandB);
         break;
-
       case DIV:
         alu(cpu, ALU_DIV, operandA, operandB);
         break;
-
       case MOD:
         alu(cpu, ALU_MOD, operandA, operandB);
         break;
-
       case HLT:
         running = 0;
         break;
-      
       default:
         printf("Unknown instruction %02x at address %02x\n", ir, cpu->pc);
         exit(1);
