@@ -8,23 +8,46 @@
 /**
  * Load the binary bytes from a .ls8 source file into a RAM array
  */
-void cpu_load(struct cpu *cpu)
+void cpu_load(struct cpu *cpu, char *filename)
 {
-  char data[DATA_LEN] = {
-    // From print8.ls8
-    0b10000010, // LDI R0,8
-    0b00000000,
-    0b00001000,
-    0b01000111, // PRN R0
-    0b00000000,
-    0b00000001  // HLT
-  };
+  // char data[DATA_LEN] = {
+  //   // From print8.ls8
+  //   0b10000010, // LDI R0,8
+  //   0b00000000,
+  //   0b00001000,
+  //   0b01000111, // PRN R0
+  //   0b00000000,
+  //   0b00000001  // HLT
+  // };
 
+  // int address = 0;
+
+  // for (int i = 0; i < DATA_LEN; i++) {
+  //   cpu->ram[address++] = data[i];
+  // }
+  FILE *fp;
+  char line[1024];
   int address = 0;
 
-  for (int i = 0; i < DATA_LEN; i++) {
-    cpu->ram[address++] = data[i];
+  fp = fopen(filename, "r");
+
+  if (fp == NULL) {
+    fprintf(stderr, "file not found\n");
+    exit(1);
   }
+
+  while (fgets(line, 1024, fp) != NULL) {
+    char *endptr;
+    unsigned char v = strtoul(line, &endptr, 2);
+
+    if (endptr == line) {
+      continue;
+    }
+
+    cpu->ram[address] = v;
+    address++;
+  }
+
 
   // TODO: Replace this with something less hard-coded
 }
@@ -96,9 +119,9 @@ void cpu_run(struct cpu *cpu)
         break;
 
       case HLT:
-       running = 0;
-       cpu->pc++;
-       break;
+        running = 0;
+        cpu->pc++;
+        break;
       
       default:
         printf("Unknown instruction %02x at address %02x\n", ir, cpu->pc);
