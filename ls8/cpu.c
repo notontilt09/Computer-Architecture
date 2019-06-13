@@ -4,11 +4,12 @@
 #include <stdlib.h>
 
 #define DATA_LEN 6
+#define SP cpu->registers[7] 
 
 // helper functions for reading/writing ram
-unsigned char cpu_ram_read(struct cpu *cpu)
+unsigned char cpu_ram_read(struct cpu *cpu, int address)
 {
-  return cpu->ram[cpu->pc];
+  return cpu->ram[address];
 }
 
 void cpu_ram_write(struct cpu *cpu, int address, char input)
@@ -21,10 +22,14 @@ void cpu_ram_write(struct cpu *cpu, int address, char input)
  */
 void cpu_load(struct cpu *cpu, char *filename)
 {
+  // file pointer
   FILE *fp;
+  // read buffer
   char line[1024];
+  // ram address we'll write into
   int address = 0;
 
+  // open the file passed in via CLI args
   fp = fopen(filename, "r");
 
   if (fp == NULL) {
@@ -32,8 +37,10 @@ void cpu_load(struct cpu *cpu, char *filename)
     exit(1);
   }
 
+  // loop through file and write each line into the cpu->ram
   while (fgets(line, 1024, fp) != NULL) {
     char *endptr;
+    // use stroul to convert string to unsigned long
     unsigned char v = strtoul(line, &endptr, 2);
 
     if (endptr == line) {
@@ -42,8 +49,11 @@ void cpu_load(struct cpu *cpu, char *filename)
 
     cpu_ram_write(cpu, address, v);
     address++;
+  
+
   }
 
+  fclose(fp);
 
   // TODO: Replace this with something less hard-coded
 }
@@ -81,6 +91,7 @@ void cpu_run(struct cpu *cpu)
 {
   int running = 1; // True until we get a HLT instruction
 
+  // instruction register
   unsigned char ir;
   int num_operands = 0;
   unsigned char operandA;
@@ -89,7 +100,7 @@ void cpu_run(struct cpu *cpu)
   while (running) {
     // TODO
     // 1. Get the value of the current instruction (in address PC).
-    ir = cpu_ram_read(cpu);
+    ir = cpu_ram_read(cpu, cpu->pc);
     // 2. Figure out how many operands this next instruction requires
     // 3. Get the appropriate value(s) of the operands following this instruction
     num_operands = (ir >> 6);
@@ -99,6 +110,9 @@ void cpu_run(struct cpu *cpu)
     if (num_operands > 1) {
       operandB = cpu->ram[cpu->pc+2];
     }
+
+    // printf("TRACE: ir: %02x, pc: %02x, SP:%02x, r0: %02x, r1: %02x\n", ir, cpu->pc, SP, cpu->registers[0], cpu->registers[1]);
+
     // 4. switch() over it to decide on a course of action.
     // 5. Do whatever the instruction should do according to the spec.
     // 6. Move the PC to the next instruction.
@@ -128,11 +142,40 @@ void cpu_run(struct cpu *cpu)
       case HLT:
         running = 0;
         break;
+      case PUSH:
+        SP--;
+        cpu_ram_write(cpu, SP, cpu->registers[operandA]);
+        break;
+      case POP:
+        if (SP == 0xF4) {
+          fprintf(stderr, "error: cannot pop from empty stack");
+        } else {
+          cpu->registers[operandA] = cpu_ram_read(cpu, SP);
+          SP++;
+        }
+        break;
+      case CALL:
+        // address of instruction after call pushed onto stack
+        SP--;
+        cpu_ram_write(cpu, SP, cpu->pc + 2);
+        // set pc to address stored in given register
+        cpu->pc = cpu->registers[operandA];
+        break;
+      case JMP:
+        cpu->pc = cpu->registers[operandA];
+        break;
+      case RET:
+        cpu->pc = cpu_ram_read(cpu, SP);
+        SP++;
+        break;
       default:
         printf("Unknown instruction %02x at address %02x\n", ir, cpu->pc);
         exit(1);
     }
-    cpu->pc += num_operands + 1;
+
+    if (ir != RET && ir != JMP && ir != CALL) {
+      cpu->pc += num_operands + 1;
+    }
   }
 }
 
@@ -142,10 +185,12 @@ void cpu_run(struct cpu *cpu)
 void cpu_init(struct cpu *cpu)
 {
   // TODO: Initialize the PC and other special registers
-  cpu = malloc(sizeof(cpu));
+  // cpu = malloc(sizeof(cpu));
   cpu->pc = 0;
   memset(cpu->registers, 0, 8);
   memset(cpu->ram, 0, 256);
+  // setting up the stack pointer
+  SP = 0xF4;
 }
 
 
