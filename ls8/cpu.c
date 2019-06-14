@@ -61,7 +61,7 @@ void cpu_load(struct cpu *cpu, char *filename)
 /**
  * ALU
  */
-void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB)
+int alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB)
 {
   switch (op) {
     case ALU_MUL:
@@ -87,6 +87,24 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
       } else {
         cpu->fl = 0b00000010;
       }
+      break;
+    case ALU_AND:
+      cpu->registers[regA] = cpu->registers[regA] & cpu->registers[regB];
+      break;
+    case ALU_OR:
+      cpu->registers[regA] = cpu->registers[regA] | cpu->registers[regB];
+      break;
+    case ALU_XOR:
+      cpu->registers[regA] = cpu->registers[regA] ^ cpu->registers[regB];
+      break;
+    case ALU_NOT:
+      cpu->registers[regA] = ~ cpu->registers[regA];
+      break;
+    case ALU_SHL:
+      cpu->registers[regA] = cpu->registers[regA] << cpu->registers[regB];
+      break;
+    case ALU_SHR:
+      cpu->registers[regA] = cpu->registers[regA] >> cpu->registers[regB];
       break;
     default:
       printf("That operation isn't recognized by the ALU\n");

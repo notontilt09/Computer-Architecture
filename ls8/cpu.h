@@ -22,7 +22,13 @@ enum alu_op {
   ALU_ADD,
   ALU_SUB,
   ALU_MOD,
-  ALU_CMP
+  ALU_CMP,
+  ALU_AND,
+  ALU_OR,
+  ALU_XOR,
+  ALU_NOT,
+  ALU_SHL,
+  ALU_SHR
 };
 
 // Instructions
@@ -50,6 +56,7 @@ enum alu_op {
 #define JGE  0b01011010
 #define JGT  0b01010111
 #define JLE  0b01011001
+#define JLT  0b01011000
 // TODO: more instructions here. These can be used in cpu_run().
 
 // Function declarations
