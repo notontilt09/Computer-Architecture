@@ -79,6 +79,18 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
     case ALU_MOD:
       cpu->registers[regA] = cpu->registers[regA] % cpu->registers[regB];
       break;
+    case ALU_CMP:
+      if (cpu->registers[regA] == cpu->registers[regB]) {
+        cpu->fl = 0b00000001;
+      } else if (cpu->registers[regA] < cpu->registers[regB]) {
+        cpu->fl = 0b00000100;
+      } else {
+        cpu->fl = 0b00000010;
+      }
+      break;
+    default:
+      printf("That operation isn't recognized by the ALU\n");
+      exit(1);
 
     // TODO: implement more ALU ops
   }
@@ -111,7 +123,7 @@ void cpu_run(struct cpu *cpu)
       operandB = cpu->ram[cpu->pc+2];
     }
 
-    // printf("TRACE: ir: %02x, pc: %02x, SP:%02x, r0: %02x, r1: %02x\n", ir, cpu->pc, SP, cpu->registers[0], cpu->registers[1]);
+    // printf("TRACE: ir: %02x, pc: %d, SP:%02x, r0: %d, r1: %0d\n", ir, cpu->pc, SP, cpu->registers[0], cpu->registers[1]);
 
     // 4. switch() over it to decide on a course of action.
     // 5. Do whatever the instruction should do according to the spec.
@@ -168,12 +180,33 @@ void cpu_run(struct cpu *cpu)
         cpu->pc = cpu_ram_read(cpu, SP);
         SP++;
         break;
+      case ST:
+      // Store value in registerB in the address stored in registerA
+        cpu_ram_write(cpu, cpu->ram[cpu->registers[operandA]], cpu->registers[operandB]);
+        break; 
+      case CMP:
+        alu(cpu, ALU_CMP, operandA, operandB);
+        break;
+      case JEQ:
+        if (cpu->fl == 0b00000001) {
+          cpu->pc = cpu->registers[operandA];
+        } else {
+          cpu->pc+= num_operands + 1;
+        }
+        break;
+      case JNE:
+        if ((cpu->fl & 0b00000001) == 0) {
+          cpu->pc = cpu->registers[operandA];
+        } else {
+          cpu->pc+= num_operands + 1;
+        }
+        break;
       default:
         printf("Unknown instruction %02x at address %02x\n", ir, cpu->pc);
         exit(1);
     }
 
-    if (ir != RET && ir != JMP && ir != CALL) {
+    if (ir != RET && ir != JMP && ir != CALL && ir != JEQ && ir != JNE) {
       cpu->pc += num_operands + 1;
     }
   }
@@ -185,8 +218,8 @@ void cpu_run(struct cpu *cpu)
 void cpu_init(struct cpu *cpu)
 {
   // TODO: Initialize the PC and other special registers
-  // cpu = malloc(sizeof(cpu));
   cpu->pc = 0;
+  cpu->fl = 0;
   memset(cpu->registers, 0, 8);
   memset(cpu->ram, 0, 256);
   // setting up the stack pointer
