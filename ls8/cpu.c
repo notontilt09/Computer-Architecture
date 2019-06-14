@@ -188,7 +188,7 @@ void cpu_run(struct cpu *cpu)
         alu(cpu, ALU_CMP, operandA, operandB);
         break;
       case JEQ:
-        if (cpu->fl == 0b00000001) {
+        if ((cpu->fl & 0b00000001) > 0) {
           cpu->pc = cpu->registers[operandA];
         } else {
           cpu->pc+= num_operands + 1;
@@ -196,6 +196,34 @@ void cpu_run(struct cpu *cpu)
         break;
       case JNE:
         if ((cpu->fl & 0b00000001) == 0) {
+          cpu->pc = cpu->registers[operandA];
+        } else {
+          cpu->pc+= num_operands + 1;
+        }
+        break;
+      case JGE:
+        if ((cpu->fl & 0b00000011) > 0) {
+          cpu->pc = cpu->registers[operandA];
+        } else {
+          cpu->pc+= num_operands + 1;
+        }
+        break;
+      case JGT:
+        if ((cpu->fl & 0b00000010) > 0) {
+          cpu->pc = cpu->registers[operandA];
+        } else {
+          cpu->pc+= num_operands + 1;
+        }
+        break;
+      case JLE:
+        if ((cpu->fl & 0b00000101) > 0) {
+          cpu->pc = cpu->registers[operandA];
+        } else {
+          cpu->pc+= num_operands + 1;
+        }
+        break;
+      case JLT:
+        if ((cpu->fl & 0b00000100) > 0) {
           cpu->pc = cpu->registers[operandA];
         } else {
           cpu->pc+= num_operands + 1;
