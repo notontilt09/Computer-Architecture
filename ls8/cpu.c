@@ -73,6 +73,9 @@ void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB
     case ALU_ADD:
       cpu->registers[regA] = cpu->registers[regA] + cpu->registers[regB];
       break;
+    case ALU_ADDI:
+      cpu->registers[regA] = cpu->registers[regA] + regB;
+      break;
     case ALU_SUB:
       cpu->registers[regA] = cpu->registers[regA] - cpu->registers[regB];
       break;

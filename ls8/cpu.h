@@ -28,7 +28,8 @@ enum alu_op {
   ALU_XOR,
   ALU_NOT,
   ALU_SHL,
-  ALU_SHR
+  ALU_SHR,
+  ALU_ADDI
 };
 
 // Instructions
