@@ -61,7 +61,7 @@ void cpu_load(struct cpu *cpu, char *filename)
 /**
  * ALU
  */
-int alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB)
+void alu(struct cpu *cpu, enum alu_op op, unsigned char regA, unsigned char regB)
 {
   switch (op) {
     case ALU_MUL:
@@ -169,6 +169,27 @@ void cpu_run(struct cpu *cpu)
       case MOD:
         alu(cpu, ALU_MOD, operandA, operandB);
         break;
+      case CMP:
+        alu(cpu, ALU_CMP, operandA, operandB);
+        break;
+      case AND:
+        alu(cpu, ALU_AND, operandA, operandB);
+        break;
+      case OR:
+        alu(cpu, ALU_OR, operandA, operandB);
+        break;
+      case XOR:
+        alu(cpu, ALU_XOR, operandA, operandB);
+        break;
+      case NOT:
+        alu(cpu, ALU_NOT, operandA, operandB);
+        break;
+      case SHL:
+        alu(cpu, ALU_SHL, operandA, operandB);
+        break;
+      case SHR:
+        alu(cpu, ALU_SHR, operandA, operandB);
+        break;
       case HLT:
         running = 0;
         break;
@@ -202,9 +223,6 @@ void cpu_run(struct cpu *cpu)
       // Store value in registerB in the address stored in registerA
         cpu_ram_write(cpu, cpu->ram[cpu->registers[operandA]], cpu->registers[operandB]);
         break; 
-      case CMP:
-        alu(cpu, ALU_CMP, operandA, operandB);
-        break;
       case JEQ:
         if ((cpu->fl & 0b00000001) > 0) {
           cpu->pc = cpu->registers[operandA];
